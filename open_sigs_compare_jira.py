@@ -96,6 +96,13 @@ class Aplicativo:
         x = (largura_tela / 2) - (largura / 2)
         y = (altura_tela / 2) - (altura / 2)
         self.raiz.geometry(f'{largura}x{altura}+{int(x)}+{int(y)}')
+        
+    def atualizar_status(self, mensagem):
+        self.lbl_status.config(text=mensagem)
+        self.raiz.after(3000, self.limpar_status)  # Agendar limpar_status para ser chamado após 3000 ms
+
+    def limpar_status(self):
+        self.lbl_status.config(text="")
 
     def obter_caminho_arquivo(self, titulo, tipo_arquivo, extensao):
         return filedialog.askopenfilename(title=titulo, filetypes=[(tipo_arquivo, extensao)])
@@ -111,31 +118,51 @@ class Aplicativo:
         df = df.dropna(subset=[nome_coluna])
         return df
 
+    def validar_dados_csv(self, df_csv):
+        colunas_necessarias = ['Grupo', 'ID']
+        for coluna in colunas_necessarias:
+            if coluna not in df_csv.columns:
+                raise ValueError(f"A coluna '{coluna}' não está presente no arquivo CSV.")
+        if df_csv['ID'].isnull().any():
+            raise ValueError("Valores nulos encontrados na coluna 'ID' do arquivo CSV.")
+
+    def validar_dados_excel(self, df_excel):
+        colunas_necessarias = ['ID SIGS']
+        for coluna in colunas_necessarias:
+            if coluna not in df_excel.columns:
+                raise ValueError(f"A coluna '{coluna}' não está presente no arquivo Excel.")
+        if df_excel['ID SIGS'].isnull().any():
+            raise ValueError("Valores nulos encontrados na coluna 'ID SIGS' do arquivo Excel.")
+
     def cadastrar_jira(self):
         self.caminho_csv = self.obter_caminho_arquivo("Selecione o arquivo export do Sigs", "Arquivos CSV", "*.csv")
         if not self.caminho_csv:
-            self.lbl_status.config(text="Erro: Arquivo CSV não selecionado.")
+            self.atualizar_status("Erro: Arquivo CSV não selecionado.")
             return
 
         self.caminho_xlsx = self.obter_caminho_arquivo("Selecione o arquivo em aberto da Bare e Holding (Better Excel)", "Arquivos Excel", "*.xlsx")
         if not self.caminho_xlsx:
-            self.lbl_status.config(text="Erro: Arquivo Excel não selecionado.")
+            self.atualizar_status("Erro: Arquivo Excel não selecionado.")
             return
 
         try:
             df_csv = self.ler_csv(self.caminho_csv)
+            self.validar_dados_csv(df_csv)  # Adicionado chamada para a função de validação
+
             df_csv = df_csv[df_csv['Grupo'].str.contains('CAPGEMINI', case=False, na=False)]
             df_csv = self.limpar_dataframe(df_csv, 'ID')
             df_csv['ID'] = df_csv['ID'].astype(str)
 
             df_excel = self.ler_excel(self.caminho_xlsx)
+            self.validar_dados_excel(df_excel)  # Adicionado chamada para a função de validação
+
             df_excel = self.limpar_dataframe(df_excel, 'ID SIGS')
             df_excel['ID SIGS'] = df_excel['ID SIGS'].astype(str)
 
             caminho_saida = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Arquivos Excel", "*.xlsx")])
 
             if not caminho_saida:
-                self.lbl_status.config(text="Erro: Arquivo de saída não selecionado.")
+                self.atualizar_status("Erro: Arquivo de saída não selecionado.")
                 return
 
             df_para_salvar = df_csv[~df_csv['ID'].isin(df_excel['ID SIGS'])]
@@ -145,10 +172,13 @@ class Aplicativo:
             with pd.ExcelWriter(caminho_saida, engine='openpyxl', mode='a') as escritor:
                 df_para_fechar.to_excel(escritor, index=False, sheet_name="Fechar Sigs")
 
-            self.lbl_status.config(text="Processo concluído!")
+            self.atualizar_status("Processo concluído!")
 
+        except ValueError as e:
+            self.atualizar_status(f"Erro de validação: {str(e)}")
+            return
         except Exception as e:
-            self.lbl_status.config(text=f"Erro: {str(e)}")
+            self.atualizar_status(f"Erro: {str(e)}")
             return
 
     def excluir_arquivos(self):
@@ -158,7 +188,7 @@ class Aplicativo:
                 print(f"Arquivo {caminho_arquivo} removido com sucesso.")
             else:
                 print(f"Arquivo {caminho_arquivo} não encontrado.")
-        self.lbl_status.config(text="Rotina de exclusáo finalizada!")
+        self.atualizar_status("Rotina de exclusão finalizada!")
 
 if __name__ == "__main__":
     raiz_intro = tk.Tk()
