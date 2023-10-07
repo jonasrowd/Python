@@ -1,143 +1,149 @@
 import os
 import pandas as pd
 import tkinter as tk
-from tkinter import ttk, filedialog, Label, Button, Text, Scrollbar
+from tkinter import filedialog, Label, Button, Text, Scrollbar
 
-class IntroScreen:
-    def __init__(self, master):
-        self.master = master
-        self.master.title("Informações do Processador de Arquivos")
-        self.master.geometry("700x500")
+class TelaIntroducao:
+    def __init__(self, mestre):
+        self.mestre = mestre
+        self.mestre.title("Informações do Processador de Arquivos")
+        self.mestre.geometry("700x500")
+        self.configurar_interface()
 
-        info_text = """
+    def configurar_interface(self):
+        texto_informativo = """
 
-O Arquivo do Sigs deve ser separado por ; e do Jira exportado para Better Excel.
+        O Arquivo do Sigs deve ser separado por ; e do Jira exportado para Better Excel.
 
-Carrega os Arquivos:
+        Carrega os Arquivos:
 
-- O arquivo export do Sigs é lido.
-- O arquivo arquivo em aberto da Bare e Holding é lido.
+        - O arquivo export do Sigs é lido.
+        - O arquivo arquivo em aberto da Bare e Holding é lido.
 
-Filtragem dos Dados do export do Sigs:
+        Filtragem dos Dados do export do Sigs:
 
-- Filtra as linhas onde a coluna 'Grupo' contém a palavra 'CAPGEMINI'.
-- Limpa a coluna 'ID', removendo os espaços e excluindo linhas com valores NaN.
-- Converte a coluna 'ID' do export do Sigs para o tipo str.
+        - Filtra as linhas onde a coluna 'Grupo' contém a palavra 'CAPGEMINI'.
+        - Limpa a coluna 'ID', removendo os espaços e excluindo linhas com valores NaN.
+        - Converte a coluna 'ID' do export do Sigs para o tipo str.
 
-Limpando os Dados do arquivo em aberto da Bare e Holding:
+        Limpando os Dados do arquivo em aberto da Bare e Holding:
 
-- Limpa a coluna 'ID SIGS', removendo os espaços e excluindo linhas com valores NaN.
-- Converte a coluna 'ID SIGS' para o tipo str.
+        - Limpa a coluna 'ID SIGS', removendo os espaços e excluindo linhas com valores NaN.
+        - Converte a coluna 'ID SIGS' para o tipo str.
 
-Comparações:
+        Comparações:
 
-- IDs do export do Sigs que não estão no arquivo em aberto da Bare e Holding são armazenados na worksheet "Cadastrar Jira".
-- IDs do arquivo em aberto da Bare e Holding que não estão no export do Sigs são armazenados na worksheet "Fechar Sigs".
+        - IDs do export do Sigs que não estão no arquivo em aberto da Bare e Holding são armazenados na worksheet "Cadastrar Jira".
+        - IDs do arquivo em aberto da Bare e Holding que não estão no export do Sigs são armazenados na worksheet "Fechar Sigs".
 
-Exclusão de Arquivos:
+        Exclusão de Arquivos:
 
-- Após o processamento, é possível excluir os arquivos export do Sigs e arquivo em aberto da Bare e Holding originais.
-"""
+        - Após o processamento, é possível excluir os arquivos export do Sigs e arquivo em aberto da Bare e Holding originais.
+        """
+        self.centralizar_janela(700, 500)
 
-        scroll = Scrollbar(self.master)
-        scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        barra_rolagem = Scrollbar(self.mestre)
+        barra_rolagem.pack(side=tk.RIGHT, fill=tk.Y)
 
-        txt_info = Text(self.master, wrap=tk.WORD, yscrollcommand=scroll.set)
-        txt_info.insert(tk.END, info_text)
+        txt_info = Text(self.mestre, wrap=tk.WORD, yscrollcommand=barra_rolagem.set)
+        txt_info.insert(tk.END, texto_informativo)
         txt_info.pack(padx=10, pady=10, expand=True, fill=tk.BOTH)
 
-        scroll.config(command=txt_info.yview)
+        barra_rolagem.config(command=txt_info.yview)
 
-        btn_start = Button(self.master, text="Iniciar", command=self.start_app)
-        btn_start.pack(pady=20)
+        btn_iniciar = Button(self.mestre, text="Iniciar", command=self.iniciar_aplicativo)
+        btn_iniciar.pack(pady=20)
 
-    def start_app(self):
-        self.master.destroy()
-        root = tk.Tk()
-        app = App(root)
-        root.mainloop()
-class App:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Comparador Sigs x Jira")
-        self.root.geometry("400x200")
+    def centralizar_janela(self, largura, altura):
+        largura_tela = self.mestre.winfo_screenwidth()
+        altura_tela = self.mestre.winfo_screenheight()
+        x = (largura_tela / 2) - (largura / 2)
+        y = (altura_tela / 2) - (altura / 2)
+        self.mestre.geometry(f'{largura}x{altura}+{int(x)}+{int(y)}')
 
-        self.csv_path = None
-        self.xlsx_path = None
+    def iniciar_aplicativo(self):
+        self.mestre.destroy()
+        raiz = tk.Tk()
+        app = Aplicativo(raiz)
+        raiz.mainloop()
 
-        lbl_title = Label(self.root, text="Bem-vindo ao Comparador Sigs x Jira", font=("Arial Bold", 14))
-        lbl_title.pack(pady=10)
+class Aplicativo:
+    def __init__(self, raiz):
+        self.raiz = raiz
+        self.raiz.title("Comparador Sigs x Jira")
+        self.raiz.geometry("400x200")
+        self.caminho_csv = None
+        self.caminho_xlsx = None
+        self.configurar_interface()
 
-        btn_start = Button(self.root, text="Processar", command=self.cadastrar_jira)
-        btn_start.pack(pady=10)
+    def configurar_interface(self):
+        lbl_titulo = Label(self.raiz, text="Bem-vindo ao Comparador Sigs x Jira", font=("Arial Bold", 14))
+        lbl_titulo.pack(pady=10)
 
-        btn_delete = Button(self.root, text="Excluir Arquivos Utilizados", command=self.on_delete_files)
-        btn_delete.pack(pady=10)
+        btn_processar = Button(self.raiz, text="Processar", command=self.cadastrar_jira)
+        btn_processar.pack(pady=10)
 
-        self.lbl_status = Label(self.root, text="")
+        btn_excluir = Button(self.raiz, text="Excluir Arquivos Utilizados", command=self.excluir_arquivos)
+        btn_excluir.pack(pady=10)
+
+        self.lbl_status = Label(self.raiz, text="")
         self.lbl_status.pack(pady=10)
+        self.centralizar_janela(400, 200)
 
-    def get_file_path(self, title, file_type, extension):
-        return filedialog.askopenfilename(title=title, filetypes=[(file_type, extension)])
+    def centralizar_janela(self, largura, altura):
+        largura_tela = self.raiz.winfo_screenwidth()
+        altura_tela = self.raiz.winfo_screenheight()
+        x = (largura_tela / 2) - (largura / 2)
+        y = (altura_tela / 2) - (altura / 2)
+        self.raiz.geometry(f'{largura}x{altura}+{int(x)}+{int(y)}')
 
-    def read_csv(self, file_path):
-        return pd.read_csv(file_path, delimiter=';')
+    def obter_caminho_arquivo(self, titulo, tipo_arquivo, extensao):
+        return filedialog.askopenfilename(title=titulo, filetypes=[(tipo_arquivo, extensao)])
 
-    def read_excel(self, file_path):
-        return pd.read_excel(file_path)
+    def ler_csv(self, caminho_arquivo):
+        return pd.read_csv(caminho_arquivo, delimiter=';')
 
-    def clean_dataframe(self, df, column_name):
-        df[column_name] = df[column_name].str.strip()
-        df = df.dropna(subset=[column_name])
+    def ler_excel(self, caminho_arquivo):
+        return pd.read_excel(caminho_arquivo)
+
+    def limpar_dataframe(self, df, nome_coluna):
+        df[nome_coluna] = df[nome_coluna].str.strip()
+        df = df.dropna(subset=[nome_coluna])
         return df
 
-    def save_dataframe(self, df, column_name, compare_column, output_path):
-        df[~df[column_name].isin(compare_column)].to_excel(output_path, index=False, sheet_name="Cadastrar Jira")
-
-    def delete_files(self, file_paths):
-        for file_path in file_paths:
-            if os.path.exists(file_path):
-                os.remove(file_path)
-                print(f"Arquivo {file_path} removido com sucesso.")
-            else:
-                print(f"Arquivo {file_path} não encontrado.")
-
     def cadastrar_jira(self):
-        self.csv_path = self.get_file_path("Selecione o arquivo export do Sigs", "CSV files", "*.csv")
-        if not self.csv_path:
-            self.lbl_status.config(text="Erro: Arquivo de saída não selecionado.")
+        self.caminho_csv = self.obter_caminho_arquivo("Selecione o arquivo export do Sigs", "Arquivos CSV", "*.csv")
+        if not self.caminho_csv:
+            self.lbl_status.config(text="Erro: Arquivo CSV não selecionado.")
             return
-        
-        self.xlsx_path = self.get_file_path("Selecione o arquivo em aberto da Bare e Holding (Better Excel)", "Excel files", "*.xlsx")
-        if not self.xlsx_path:
-            self.lbl_status.config(text="Erro: Arquivo de saída não selecionado.")
+
+        self.caminho_xlsx = self.obter_caminho_arquivo("Selecione o arquivo em aberto da Bare e Holding (Better Excel)", "Arquivos Excel", "*.xlsx")
+        if not self.caminho_xlsx:
+            self.lbl_status.config(text="Erro: Arquivo Excel não selecionado.")
             return
-        
+
         try:
-            df_csv = self.read_csv(self.csv_path)
+            df_csv = self.ler_csv(self.caminho_csv)
             df_csv = df_csv[df_csv['Grupo'].str.contains('CAPGEMINI', case=False, na=False)]
-            df_csv = self.clean_dataframe(df_csv, 'ID')
+            df_csv = self.limpar_dataframe(df_csv, 'ID')
             df_csv['ID'] = df_csv['ID'].astype(str)
 
-            df_excel = self.read_excel(self.xlsx_path)
-            df_excel = self.clean_dataframe(df_excel, 'ID SIGS')
+            df_excel = self.ler_excel(self.caminho_xlsx)
+            df_excel = self.limpar_dataframe(df_excel, 'ID SIGS')
             df_excel['ID SIGS'] = df_excel['ID SIGS'].astype(str)
 
-            output_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel files", "*.xlsx")])
+            caminho_saida = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Arquivos Excel", "*.xlsx")])
 
-            # Verificando se o arquivo de saída foi selecionado
-            if not output_path:
+            if not caminho_saida:
                 self.lbl_status.config(text="Erro: Arquivo de saída não selecionado.")
                 return
-        
-            # Salvando IDs do CSV não presentes no Excel
-            df_to_save = df_csv[~df_csv['ID'].isin(df_excel['ID SIGS'])]
-            df_to_save.to_excel(output_path, index=False, sheet_name="Cadastrar Jira")
 
-            # Salvando IDs do Excel não presentes no CSV (Verificação inversa)
-            df_to_close = df_excel[~df_excel['ID SIGS'].isin(df_csv['ID'])]
-            with pd.ExcelWriter(output_path, engine='openpyxl', mode='a') as writer:
-                df_to_close.to_excel(writer, index=False, sheet_name="Fechar Sigs")
+            df_para_salvar = df_csv[~df_csv['ID'].isin(df_excel['ID SIGS'])]
+            df_para_salvar.to_excel(caminho_saida, index=False, sheet_name="Cadastrar Jira")
+
+            df_para_fechar = df_excel[~df_excel['ID SIGS'].isin(df_csv['ID'])]
+            with pd.ExcelWriter(caminho_saida, engine='openpyxl', mode='a') as escritor:
+                df_para_fechar.to_excel(escritor, index=False, sheet_name="Fechar Sigs")
 
             self.lbl_status.config(text="Processo concluído!")
 
@@ -145,11 +151,16 @@ class App:
             self.lbl_status.config(text=f"Erro: {str(e)}")
             return
 
-    def on_delete_files(self):
-        self.delete_files([self.csv_path, self.xlsx_path])
-        self.lbl_status.config(text="Arquivos excluídos com sucesso!")
+    def excluir_arquivos(self):
+        for caminho_arquivo in [self.caminho_csv, self.caminho_xlsx]:
+            if caminho_arquivo and os.path.exists(caminho_arquivo):
+                os.remove(caminho_arquivo)
+                print(f"Arquivo {caminho_arquivo} removido com sucesso.")
+            else:
+                print(f"Arquivo {caminho_arquivo} não encontrado.")
+        self.lbl_status.config(text="Rotina de exclusáo finalizada!")
 
 if __name__ == "__main__":
-    root_intro = tk.Tk()
-    intro = IntroScreen(root_intro)
-    root_intro.mainloop()
+    raiz_intro = tk.Tk()
+    intro = TelaIntroducao(raiz_intro)
+    raiz_intro.mainloop()
