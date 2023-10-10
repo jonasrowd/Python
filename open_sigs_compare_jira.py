@@ -16,27 +16,31 @@ class TelaIntroducao(BaseApp):
     def __init__(self, mestre):
         self.mestre = mestre
         self.mestre.title("Informações do Processador de Arquivos")
-        self.mestre.geometry("700x500")
+        self.mestre.geometry("800x600")
+        self.mestre.iconbitmap('C:\Workspace\Python\CAPGEMINI.ico')
         self.configurar_interface()
 
     def configurar_interface(self):
-        texto_informativo = """
-Delimitadores Sigs = [;,|]
-Jira exportar para Better Excel.
+        texto_informativo = (
+            "Bem-vindo ao Processador de Arquivos!\n\n"
+            "Delimitadores Sigs = [;,|]\n"
+            "Jira: exportar para Better Excel.\n\n"
+            "Carga dos Arquivos:\n"
+            "- O arquivo export do Sigs é lido (formatos .csv ou .txt).\n"
+            "- O arquivo do Jira é lido (formato .xlsx).\n\n"
+            "Após o processamento, é possível excluir os arquivos export do Sigs e arquivo em aberto da Bare e Holding originais."
+        )
 
-Carga dos Arquivos:
-- O arquivo export do Sigs é lido csv ou txt.
-- O arquivo do Jira é lido em excel.
-
-- Após o processamento, é possível excluir os arquivos export do Sigs e arquivo em aberto da Bare e Holding originais.
-"""
-        self.centralizar_janela(self.mestre, 700, 500)
+        self.centralizar_janela(self.mestre, 800, 600)
         barra_rolagem = Scrollbar(self.mestre)
         barra_rolagem.pack(side=tk.RIGHT, fill=tk.Y)
-        txt_info = Text(self.mestre, wrap=tk.WORD, yscrollcommand=barra_rolagem.set)
+
+        txt_info = Text(self.mestre, wrap=tk.WORD, yscrollcommand=barra_rolagem.set, padx=10, pady=10, spacing3=5, width=80, height=20)
         txt_info.insert(tk.END, texto_informativo)
         txt_info.pack(padx=10, pady=10, expand=True, fill=tk.BOTH)
+
         barra_rolagem.config(command=txt_info.yview)
+
         btn_iniciar = Button(self.mestre, text="Iniciar", command=self.iniciar_aplicativo)
         btn_iniciar.pack(pady=20)
 
@@ -46,11 +50,13 @@ Carga dos Arquivos:
         app = Aplicativo(raiz)
         raiz.mainloop()
 
+
 class Aplicativo(BaseApp):
     def __init__(self, raiz):
         self.raiz = raiz
         self.raiz.title("Comparador Sigs x Jira")
         self.raiz.geometry("400x200")
+        self.raiz.iconbitmap('C:\Workspace\Python\CAPGEMINI.ico')  # Adiciona o ícone
         self.caminho_csv = None
         self.caminho_xlsx = None
         self.configurar_interface()
