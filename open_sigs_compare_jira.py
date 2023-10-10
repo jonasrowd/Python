@@ -17,7 +17,7 @@ class TelaIntroducao(BaseApp):
         self.mestre = mestre
         self.mestre.title("Informações do Processador de Arquivos")
         self.mestre.geometry("800x600")
-        self.mestre.iconbitmap('C:\Workspace\Python\CAPGEMINI.ico')
+        self.mestre.iconbitmap('C:/Workspace/Python/CAPGEMINI.ico')
         self.configurar_interface()
 
     def configurar_interface(self):
@@ -56,7 +56,7 @@ class Aplicativo(BaseApp):
         self.raiz = raiz
         self.raiz.title("Comparador Sigs x Jira")
         self.raiz.geometry("400x200")
-        self.raiz.iconbitmap('C:\Workspace\Python\CAPGEMINI.ico')  # Adiciona o ícone
+        self.raiz.iconbitmap("C:/Workspace/Python/CAPGEMINI.ico")  # Adiciona o ícone
         self.caminho_csv = None
         self.caminho_xlsx = None
         self.configurar_interface()
@@ -93,7 +93,7 @@ class Aplicativo(BaseApp):
             with open(caminho_arquivo, 'r', encoding='utf-8') as f:
                 for i, linha in enumerate(f, start=2):
                     if linha.count(delimitador) != num_delimitadores:  
-                        linhas_erro = linhas_erro.append({"Linha": i, "Conteudo": linha.strip()}, ignore_index=True)
+                        linhas_erro = linhas_erro.append({'Linha': i, 'Conteudo': linha.strip()}, ignore_index=True)
             df = pd.read_csv(caminho_arquivo, delimiter=delimitador)
             return df, linhas_erro
         except Exception as e:
